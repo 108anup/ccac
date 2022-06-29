@@ -1,8 +1,9 @@
 from typing import Any, List, Optional, Tuple
 
-from config import ModelConfig
-from pyz3_utils import MySolver
 import pyz3_utils
+from pyz3_utils import MySolver
+
+from .config import ModelConfig
 
 
 class Variables(pyz3_utils.Variables):

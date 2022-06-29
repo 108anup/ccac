@@ -1,9 +1,10 @@
 from fractions import Fraction
 from typing import Callable, Dict, Union
-import z3
 
-from config import ModelConfig
+import z3
 from pyz3_utils import BinarySearch, MySolver
+
+from .config import ModelConfig
 
 ModelDict = Dict[str, Union[Fraction, bool]]
 

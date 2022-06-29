@@ -1,14 +1,15 @@
-import matplotlib
-import matplotlib.pyplot as plt
-import numpy as np
 import pickle as pkl
 import sys
 from typing import List, Optional, Tuple, Union
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 from pyz3_utils import QueryResult
-from config import ModelConfig
-from utils import ModelDict
-from variables import VariableNames
+
+from .config import ModelConfig
+from .utils import ModelDict
+from .variables import VariableNames
 
 
 def plot_model(m: ModelDict, c: ModelConfig, v: VariableNames):

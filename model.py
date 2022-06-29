@@ -1,12 +1,13 @@
 from typing import Optional, Tuple
-from z3 import And, Sum, Implies, Or, Not, If
 
-from cca_aimd import cca_aimd
-from cca_bbr import cca_bbr
-from cca_copa import cca_copa
-from config import ModelConfig
 from pyz3_utils import MySolver
-from variables import Variables
+from z3 import And, If, Implies, Not, Or, Sum
+
+from .cca_aimd import cca_aimd
+from .cca_bbr import cca_bbr
+from .cca_copa import cca_copa
+from .config import ModelConfig
+from .variables import Variables
 
 
 def monotone(c: ModelConfig, s: MySolver, v: Variables):
@@ -266,8 +267,9 @@ def make_solver(c: ModelConfig,
 
 
 if __name__ == "__main__":
-    from plot import plot_model
     from pyz3_utils import run_query
+
+    from plot import plot_model
     from utils import make_periodic
 
     c = ModelConfig(N=1,
