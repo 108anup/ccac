@@ -226,6 +226,14 @@ def cca_const(c: ModelConfig, s: MySolver, v: Variables):
                 s.add(v.r_f[n][t] >= c.C * 100)
 
 
+def cca_paced(c: ModelConfig, s: MySolver, v: Variables):
+    for n in range(c.N):
+        for t in range(c.T):
+            # Basic constraints
+            s.add(v.c_f[n][t] > 0)
+            s.add(v.r_f[n][t] == v.c_f[n][t] / c.R)
+
+
 def make_solver(c: ModelConfig,
                 s: Optional[MySolver] = None,
                 v: Optional[Variables] = None) -> Tuple[MySolver, Variables]:
@@ -260,8 +268,10 @@ def make_solver(c: ModelConfig,
         cca_copa(c, s, v)
     elif c.cca == "any":
         pass
+    elif c.cca == "paced":
+        cca_paced(c, s, v)
     else:
-        assert(False)
+        assert False, "CCA {} not found".format(c.cca)
 
     return (s, v)
 
