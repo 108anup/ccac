@@ -1,10 +1,10 @@
 ''' A simplified version of BBR '''
 
+from pyz3_utils import MySolver
 from z3 import And, If, Implies, Not
 
-from config import ModelConfig
-from pyz3_utils import MySolver
-from variables import Variables
+from .config import ModelConfig
+from .variables import Variables
 
 
 class BBRSimpleVariables:

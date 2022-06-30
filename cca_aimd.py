@@ -1,8 +1,8 @@
+from pyz3_utils import MySolver
 from z3 import And, Implies, Not, Or
 
-from config import ModelConfig
-from pyz3_utils import MySolver
-from variables import Variables
+from .config import ModelConfig
+from .variables import Variables
 
 
 class AIMDVariables:
