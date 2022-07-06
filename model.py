@@ -32,9 +32,10 @@ def initial(c: ModelConfig, s: MySolver, v: Variables):
         s.add(v.L_f[n][0] >= 0)
         s.add(v.Ld_f[n][0] >= 0)
 
-        # These are invariant to y-shift. However, it does make the results
-        # easier to interpret if they start from 0
-        s.add(v.S_f[n][0] == 0)
+        # Removing as CCmatic can overfit to knowledge that S_f[n][0] = 0
+        # # These are invariant to y-shift. However, it does make the results
+        # # easier to interpret if they start from 0
+        # s.add(v.S_f[n][0] == 0)
 
 
 def relate_tot(c: ModelConfig, s: MySolver, v: Variables):
