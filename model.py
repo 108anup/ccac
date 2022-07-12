@@ -82,10 +82,10 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
                         Implies(
                             v.L[t] > v.L[t - 1], v.A[t] - v.L[t] >= v.C0 + c.C *
                             (t - 1) - v.W[t - 1] + c.buf_min
-                            # And(v.A[t] - v.L[t] >= v.C0 + c.C*(t-1) - v.W[t-1] + c.buf_min,
-                            #     r > v.C0 + c.C,
-                            #     v.C0 + c.C*(t-1) - v.W[t-1] + c.buf_min
-                            #     - (v.A[t-1] - v.L[t-1]) < r - v.C0 + c.C
+                            # And(v.A[t] - v.L[t] >= c.C*(t-1) - v.W[t-1] + c.buf_min,
+                            #     r > c.C,
+                            #     c.C*(t-1) - v.W[t-1] + c.buf_min
+                            #     - (v.A[t-1] - v.L[t-1]) < r - c.C
                             #     )
                         ))
                 else:
@@ -235,7 +235,7 @@ def cca_const(c: ModelConfig, s: MySolver, v: Variables):
             if c.pacing:
                 s.add(v.r_f[n][t] == v.alpha / c.R)
             else:
-                s.add(v.r_f[n][t] >= v.C0 + c.C * 100)
+                s.add(v.r_f[n][t] >= c.C * 100)
 
 def cca_paced(c: ModelConfig, s: MySolver, v: Variables):
     for n in range(c.N):
@@ -310,8 +310,8 @@ if __name__ == "__main__":
     s.add(v.A_f[0][0] == v.A_f[1][0])
     # s.add(v.A_f[0][0] == 0)
     # s.add(v.L[dur] == 0)
-    # s.add(v.S[-1] - v.S[0] < v.C0 + c.C * (c.T - 1))
-    s.add(v.S_f[0][-1] - v.S_f[1][-1] > 0.499 * (v.C0 + c.C * c.T))
+    # s.add(v.S[-1] - v.S[0] < c.C * (c.T - 1))
+    s.add(v.S_f[0][-1] - v.S_f[1][-1] > 0.499 * (c.C * c.T))
     make_periodic(c, s, v, dur)
     qres = run_query(s, c)
     print(qres.satisfiable)
