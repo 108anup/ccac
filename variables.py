@@ -94,6 +94,8 @@ class Variables(pyz3_utils.Variables):
         else:
             self.alpha = c.alpha
 
+        self.C0 = s.Real(f"{pre}initial_tokens")
+
 
 class VariableNames:
     ''' Class with the same structure as Variables, but with just the names '''

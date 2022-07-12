@@ -21,6 +21,7 @@ def monotone(c: ModelConfig, s: MySolver, v: Variables):
             s.add(
                 v.A_f[n][t] - v.L_f[n][t] >= v.A_f[n][t - 1] - v.L_f[n][t - 1])
         s.add(v.W[t] >= v.W[t - 1])
+        s.add(v.C0 + c.C * t - v.W[t] >= v.C0 + c.C * (t-1) - v.W[t-1])
 
 
 def initial(c: ModelConfig, s: MySolver, v: Variables):
@@ -51,19 +52,19 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
         for n in range(c.N):
             s.add(v.S_f[n][t] <= v.A_f[n][t] - v.L_f[n][t])
 
-        s.add(v.S[t] <= c.C * t - v.W[t])
+        s.add(v.S[t] <= v.C0 + c.C * t - v.W[t])
         if t >= c.D:
-            s.add(c.C * (t - c.D) - v.W[t - c.D] <= v.S[t])
+            s.add(v.C0 + c.C * (t - c.D) - v.W[t - c.D] <= v.S[t])
         else:
             # The constraint is the most slack when black line is steepest. So
             # we'll say there was no wastage when t < 0
-            s.add(c.C * (t - c.D) - v.W[0] <= v.S[t])
+            s.add(v.C0 + c.C * (t - c.D) - v.W[0] <= v.S[t])
 
         if c.compose:
             if t > 0:
                 s.add(
                     Implies(v.W[t] > v.W[t - 1],
-                            v.A[t] - v.L[t] <= c.C * t - v.W[t]))
+                            v.A[t] - v.L[t] <= v.C0 + c.C * t - v.W[t]))
         else:
             if t > 0:
                 s.add(
@@ -75,7 +76,7 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
                 r = sum([v.r_f[n][t] for n in range(c.N)])
                 s.add(
                     Implies(
-                        v.L[t] > v.L[t - 1], v.A[t] - v.L[t] >= c.C *
+                        v.L[t] > v.L[t - 1], v.A[t] - v.L[t] >= v.C0 + c.C *
                         (t - 1) - v.W[t - 1] + c.buf_min
                         # And(v.A[t] - v.L[t] >= c.C*(t-1) - v.W[t-1] + c.buf_min,
                         #     r > c.C,
@@ -88,7 +89,7 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
 
         # Enforce buf_max if given
         if c.buf_max is not None:
-            s.add(v.A[t] - v.L[t] <= c.C * t - v.W[t] + c.buf_max)
+            s.add(v.A[t] - v.L[t] <= v.C0 + c.C * t - v.W[t] + c.buf_max)
 
 
 def loss_detected(c: ModelConfig, s: MySolver, v: Variables):
