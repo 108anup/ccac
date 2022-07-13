@@ -92,6 +92,12 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
             s.add(v.A[t] - v.L[t] <= v.C0 + c.C * t - v.W[t] + c.buf_max)
 
 
+def loss_oracle(c: ModelConfig, s: MySolver, v: Variables):
+    for n in range(c.N):
+        for t in range(c.T):
+            s.add(v.Ld_f[n][t] == v.L_f[n][t])
+
+
 def loss_detected(c: ModelConfig, s: MySolver, v: Variables):
     for n in range(c.N):
         for t in range(c.T):
