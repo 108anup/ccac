@@ -94,8 +94,9 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
 
 def loss_oracle(c: ModelConfig, s: MySolver, v: Variables):
     for n in range(c.N):
-        for t in range(c.T):
-            s.add(v.Ld_f[n][t] == v.L_f[n][t])
+        for t in range(c.R, c.T):
+            assert c.N == 1
+            s.add(v.Ld_f[n][t] == v.L_f[n][t-c.R])
 
 
 def loss_detected(c: ModelConfig, s: MySolver, v: Variables):
