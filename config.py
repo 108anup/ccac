@@ -37,6 +37,14 @@ class ModelConfig:
     # Whether AIMD can additively increase irrespective of losses. If true, the
     # the algorithm is more like cubic and has interesting failure modes
     aimd_incr_irrespective: bool
+    # Losses are by default detected using dupacks/timeouts. Oracle emulates
+    # losses being detecting using ECN marks signalled to
+    # the sender on each loss event.
+    loss_oracle: bool
+    # Whether loss decisions should be deterministic or non-deterministic.
+    # Non determinisim is more accurate
+    # (considering discrete relaxation of continuous model).
+    deterministic_loss: bool
 
     # These config variables are calculated automatically
     calculate_qdel: bool
@@ -91,6 +99,10 @@ class ModelConfig:
         parser.add_argument("--unsat-core", action="store_true")
         parser.add_argument("--simplify", action="store_true")
         parser.add_argument("--aimd-incr-irrespective", action="store_true")
+        parser.add_argument("--deterministic-loss", action="store_true",
+                            default=False)
+        parser.add_argument("--loss-oracle", action="store_true",
+                            default=False)
 
         return parser
 

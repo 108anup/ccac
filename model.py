@@ -73,17 +73,28 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
 
         if c.buf_min is not None:
             if t > 0:
-                r = sum([v.r_f[n][t] for n in range(c.N)])
-                s.add(
-                    Implies(
-                        v.L[t] > v.L[t - 1], v.A[t] - v.L[t] >= v.C0 + c.C *
-                        (t - 1) - v.W[t - 1] + c.buf_min
-                        # And(v.A[t] - v.L[t] >= c.C*(t-1) - v.W[t-1] + c.buf_min,
-                        #     r > c.C,
-                        #     c.C*(t-1) - v.W[t-1] + c.buf_min
-                        #     - (v.A[t-1] - v.L[t-1]) < r - c.C
-                        #     )
-                    ))
+                if(c.deterministic_loss):
+                    s.add(And(
+                        Implies(
+                            v.A[t] - v.L[t-1] > v.C0 +
+                            c.C * t - v.W[t] + c.buf_min,
+                            v.A[t] - v.L[t] == v.C0 + c.C * t - v.W[t] + c.buf_min),
+                        Implies(
+                            v.A[t] - v.L[t-1] <= v.C0 +
+                            c.C * t - v.W[t] + c.buf_min,
+                            v.L[t] == v.L[t-1])))
+                else:
+                    r = sum([v.r_f[n][t] for n in range(c.N)])
+                    s.add(
+                        Implies(
+                            v.L[t] > v.L[t - 1], v.A[t] - v.L[t] >= v.C0 + c.C *
+                            (t - 1) - v.W[t - 1] + c.buf_min
+                            # And(v.A[t] - v.L[t] >= c.C*(t-1) - v.W[t-1] + c.buf_min,
+                            #     r > c.C,
+                            #     c.C*(t-1) - v.W[t-1] + c.buf_min
+                            #     - (v.A[t-1] - v.L[t-1]) < r - c.C
+                            #     )
+                        ))
         else:
             s.add(v.L[t] == v.L[0])
 
@@ -258,7 +269,10 @@ def make_solver(c: ModelConfig,
     initial(c, s, v)
     relate_tot(c, s, v)
     network(c, s, v)
-    loss_detected(c, s, v)
+    if(c.loss_oracle):
+        loss_oracle(c, s, v)
+    else:
+        loss_detected(c, s, v)
     epsilon_alpha(c, s, v)
     if c.calculate_qdel:
         calculate_qdel(c, s, v)
