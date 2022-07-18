@@ -65,7 +65,9 @@ class ModelConfig:
                  epsilon: str,
                  unsat_core: bool,
                  simplify: bool,
-                 aimd_incr_irrespective: bool = False):
+                 aimd_incr_irrespective: bool = False,
+                 deterministic_loss: bool = False,
+                 loss_oracle: bool = False):
         self.__dict__ = locals()
         self.calculate_qdel = cca in ["copa"] or N > 1
 
