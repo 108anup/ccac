@@ -1,4 +1,5 @@
-from typing import Any, List, Optional, Tuple
+import numpy as np
+from typing import Any, List, Optional, Tuple, Union
 
 import pyz3_utils
 from pyz3_utils import MySolver
@@ -25,38 +26,45 @@ class Variables(pyz3_utils.Variables):
         # the single-flow case in the paper)
 
         # Cumulative number of bytes sent by flow n till time t
-        self.A_f = [[s.Real(f"{pre}arrival_{n},{t}") for t in range(T)]
-                    for n in range(c.N)]
+        self.A_f = np.array([[
+            s.Real(f"{pre}arrival_{n},{t}") for t in range(T)]
+            for n in range(c.N)])
         # Sum of A_f across all flows
-        self.A = [s.Real(f"{pre}tot_arrival_{t}") for t in range(T)]
+        self.A = np.array([s.Real(f"{pre}tot_arrival_{t}") for t in range(T)])
         # Congestion window for flow n at time t
-        self.c_f = [[s.Real(f"{pre}cwnd_{n},{t}") for t in range(T)]
-                    for n in range(c.N)]
+        self.c_f = np.array([[
+            s.Real(f"{pre}cwnd_{n},{t}") for t in range(T)]
+            for n in range(c.N)])
         # Pacing rate for flow n at time t
-        self.r_f = [[s.Real(f"{pre}rate_{n},{t}") for t in range(T)]
-                    for n in range(c.N)]
+        self.r_f = np.array([[
+            s.Real(f"{pre}rate_{n},{t}") for t in range(T)]
+            for n in range(c.N)])
         # Cumulative number of losses detected (by duplicate acknowledgements
         # or timeout) by flow n till time t
-        self.Ld_f = [[s.Real(f"{pre}loss_detected_{n},{t}")
-                      for t in range(T)]
-                     for n in range(c.N)]
+        self.Ld_f = np.array([[
+            s.Real(f"{pre}loss_detected_{n},{t}")
+            for t in range(T)]
+            for n in range(c.N)])
         # Cumulative number of bytes served from the server for flow n till
         # time t. These acks corresponding to these bytes will reach the sender
         # at time t+c.R
-        self.S_f = [[s.Real(f"{pre}service_{n},{t}") for t in range(T)]
-                    for n in range(c.N)]
+        self.S_f = np.array([[
+            s.Real(f"{pre}service_{n},{t}") for t in range(T)]
+            for n in range(c.N)])
         # Sum of S_f across all flows
-        self.S = [s.Real(f"{pre}tot_service_{t}") for t in range(T)]
+        self.S = np.array([s.Real(f"{pre}tot_service_{t}") for t in range(T)])
         # Cumulative number of bytes lost for flow n till time t
-        self.L_f = [[s.Real(f"{pre}losts_{n},{t}") for t in range(T)]
-                    for n in range(c.N)]
+        self.L_f = np.array([[
+            s.Real(f"{pre}losts_{n},{t}") for t in range(T)]
+            for n in range(c.N)])
         # Sum of L_f for all flows
-        self.L = [s.Real(f"{pre}tot_lost_{t}") for t in range(T)]
+        self.L = np.array([s.Real(f"{pre}tot_lost_{t}") for t in range(T)])
         # Cumulative number of bytes wasted by the server till time t
-        self.W = [s.Real(f"{pre}wasted_{t}") for t in range(T)]
+        self.W = np.array([s.Real(f"{pre}wasted_{t}") for t in range(T)])
         # Whether or not flow n is timing out at time t
-        self.timeout_f = [[s.Bool(f"{pre}timeout_{n},{t}") for t in range(T)]
-                          for n in range(c.N)]
+        self.timeout_f = np.array([[
+            s.Bool(f"{pre}timeout_{n},{t}") for t in range(T)]
+            for n in range(c.N)])
 
         # If qdel[t][dt] is true, it means that the bytes exiting at t were
         # input at time t - dt. If out[t] == out[t-1], then qdel[t][dt] ==
@@ -67,8 +75,9 @@ class Variables(pyz3_utils.Variables):
         # This is only computed when calculate_qdel=True since not all CCAs
         # require it. Of the CCAs implemented so far, only Copa requires it
         if c.calculate_qdel:
-            self.qdel = [[s.Bool(f"{pre}qdel_{t},{dt}") for dt in range(T)]
-                         for t in range(T)]
+            self.qdel = np.array([[
+                s.Bool(f"{pre}qdel_{t},{dt}") for dt in range(T)]
+                for t in range(T)])
 
         # qbound[t][dt] is true iff the queuing delay experienced by bytes
         # recieved at time t is greater than or equal to dt. In other words,
@@ -79,9 +88,10 @@ class Variables(pyz3_utils.Variables):
         # greater than t, if S[t] < A[0] - L[0], then queueing delay is greater
         # than t. When dt > t, we don't know when the byte was sent
         if(c.calculate_qbound):
-            self.qbound = [[s.Bool(f"{pre}qbound_{t},{dt}")
-                            for dt in range(T)]
-                           for t in range(T)]
+            self.qbound = np.array([[
+                s.Bool(f"{pre}qbound_{t},{dt}")
+                for dt in range(T)]
+                for t in range(T)])
 
         # This is for the non-composing model where waste is allowed only when
         # A - L and S come within epsilon of each other. See in 'config' for
@@ -112,22 +122,24 @@ class Variables(pyz3_utils.Variables):
 
 class VariableNames:
     ''' Class with the same structure as Variables, but with just the names '''
+
     def __init__(self, v: Variables):
         for x in v.__dict__:
-            if type(v.__dict__[x]) == list:
+            if (isinstance(v.__dict__[x], list)
+                    or isinstance(v.__dict__[x], np.ndarray)):
                 self.__dict__[x] = self.to_names(v.__dict__[x])
             else:
                 self.__dict__[x] = str(v.__dict__[x])
 
     @classmethod
-    def to_names(cls, x: List[Any]):
+    def to_names(cls, x: Union[List[Any], np.ndarray]):
         res = []
         for y in x:
-            if type(y) == list:
+            if isinstance(y, list) or isinstance(y, np.ndarray):
                 res.append(cls.to_names(y))
             else:
                 if type(y) in [bool, int, float, tuple]:
                     res.append(y)
                 else:
                     res.append(str(y))
-        return res
+        return np.array(res)
