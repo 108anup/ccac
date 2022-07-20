@@ -145,7 +145,7 @@ def loss_detected(c: ModelConfig, s: MySolver, v: Variables):
             # CCAC. Our timeout strategy sidesteps this issue.
 
             if t < c.R:
-                s.add(v.timeout_f[n][t] == False)
+                s.add(Not(v.timeout_f[n][t]))
             else:
                 s.add(v.timeout_f[n][t] == And(
                     v.S_f[n][t - c.R] < v.A_f[n][t - 1],  # oustanding bytes
@@ -157,17 +157,28 @@ def loss_detected(c: ModelConfig, s: MySolver, v: Variables):
 
 
 def calculate_qbound(c: ModelConfig, s: MySolver, v: Variables):
-    # qbound[0][dt] is non deterministic
-    # qbound[t][dt>t] is non deterministic
+    # qbound[t][dt<=t] is deterministic
+    # qbound[t][dt>t] is non deterministic (including qbound[0][dt>0])
+    """
+           dt
+         0 1 2 3
+       ----------
+      0| d n n n
+    t 1| d d n n
+      2| d d d n
+      3| d d d d
+    """
 
-    # Let solver choose non-deterministically what happens when
-    # t <= 0, i.e., no constraint on qbound[0][dt].
+    # Let solver choose non-deterministically what happens for
+    # t = 0, dt > 0, i.e., no constraint on qdel[0][dt>0].
+
+    # By definition queuing delay >= 0
+    for t in range(c.T):
+        s.add(v.qbound[t][0])
+
     for t in range(1, c.T):
-        for dt in range(c.T):
-            if(dt == 0):
-                # by definition queuing delay >= 0
-                s.add(v.qbound[t][dt])
-            elif(dt <= t):
+        for dt in range(1, c.T):
+            if(dt <= t):
                 s.add(
                     Implies(v.S[t] == v.S[t-1],
                             v.qbound[t][dt] == v.qbound[t-1][dt]))
@@ -192,7 +203,7 @@ def calculate_qbound(c: ModelConfig, s: MySolver, v: Variables):
             s.add(Implies(v.qbound[t][dt+1], v.qbound[t][dt]))
 
 
-def calculate_qdel(c: ModelConfig, s: MySolver, v: Variables):
+def calculate_qdel_old(c: ModelConfig, s: MySolver, v: Variables):
     # Figure out the time when the bytes being output at time t were
     # first input
     for t in range(c.T):
@@ -214,15 +225,55 @@ def calculate_qdel(c: ModelConfig, s: MySolver, v: Variables):
                     Not(v.qdel[t][t - 1])))
 
 
-def multi_flows(c: ModelConfig, s: MySolver, v: Variables):
-    assert (c.calculate_qdel)
+def calculate_qdel(c: ModelConfig, s: MySolver, v: Variables):
+    # qdel[t][dt<t] is deterministic
+    # qdel[t][dt>=t] is non-deterministic (including,
+    # qdel[0][dt], qdel[t][dt>t-1])
+
+    """
+           dt
+         0 1 2 3
+       ----------
+      0| n n n n
+    t 1| d n n n
+      2| d d n n
+      3| d d d n
+    """
+
+    # Let solver choose non-deterministically what happens for
+    # t = 0, i.e., no constraint on qdel[0][dt].
+    for t in range(1, c.T):
+        for dt in range(c.T):
+            if(dt <= t-1):
+                s.add(Implies(v.S[t] != v.S[t - 1],
+                              v.qdel[t][dt] == And(
+                    v.A[t - dt - 1] - v.L[t - dt - 1] < v.S[t],
+                    v.A[t - dt] - v.L[t - dt] >= v.S[t])))
+                s.add(Implies(v.S[t] == v.S[t - 1],
+                              v.qdel[t][dt] == v.qdel[t-1][dt]))
+            else:
+                s.add(Implies(v.S[t] == v.S[t - 1],
+                              v.qdel[t][dt] == v.qdel[t-1][dt]))
+                # We let solver choose non-deterministically what happens when
+                # S[t] != S[t-1] for dt > t-1, i.e.,
+                # no constraint on qdel[t][dt>t-1]
+
+    # There can be only one value for queuing delay at a given time.
+    # Needed only for non-deterministic choices, mostly a sanity constraint for
+    # deterministic variables.
     for t in range(c.T):
-        for n in range(c.N):
-            for dt in range(c.T):
-                if t - dt - 1 < 0:
-                    continue
-                s.add(
-                    Implies(v.qdel[t][dt], v.S_f[n][t] > v.A_f[n][t - dt - 1]))
+        s.add(Sum(*v.qdel[t]) <= 1)
+
+
+def multi_flows(c: ModelConfig, s: MySolver, v: Variables):
+    # Fairly service all flows. Requires qdel calculation.
+    assert (c.calculate_qdel)
+    for n in range(c.N):
+        for t in range(c.T):
+            for dt in range(t):
+                # Only defined for dt<=t-1
+                s.add(Implies(
+                    v.qdel[t][dt], v.S_f[n][t] > v.A_f[n][t-dt-1]))
 
 
 def epsilon_alpha(c: ModelConfig, s: MySolver, v: Variables):
