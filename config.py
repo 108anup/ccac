@@ -46,6 +46,8 @@ class ModelConfig:
     # (considering discrete relaxation of continuous model).
     deterministic_loss: bool
 
+    calculate_qbound: bool
+
     # These config variables are calculated automatically
     calculate_qdel: bool
 
@@ -70,6 +72,7 @@ class ModelConfig:
                  loss_oracle: bool = False):
         self.__dict__ = locals()
         self.calculate_qdel = cca in ["copa"] or N > 1
+        self.calculate_qbound = False
 
     @staticmethod
     def get_argparse() -> argparse.ArgumentParser:

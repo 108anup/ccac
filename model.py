@@ -106,6 +106,8 @@ def network(c: ModelConfig, s: MySolver, v: Variables):
 def loss_oracle(c: ModelConfig, s: MySolver, v: Variables):
     for n in range(c.N):
         for t in range(c.R, c.T):
+            # Loss detected from time 0 to c.R is unconstrained.
+            # We let solver non-deterministically choose it.
             s.add(v.Ld_f[n][t] == v.L_f[n][t-c.R])
 
 
@@ -154,6 +156,42 @@ def loss_detected(c: ModelConfig, s: MySolver, v: Variables):
             s.add(v.Ld_f[n][t] <= v.L_f[n][t - c.R])
 
 
+def calculate_qbound(c: ModelConfig, s: MySolver, v: Variables):
+    # qbound[0][dt] is non deterministic
+    # qbound[t][dt>t] is non deterministic
+
+    # Let solver choose non-deterministically what happens when
+    # t <= 0, i.e., no constraint on qbound[0][dt].
+    for t in range(1, c.T):
+        for dt in range(c.T):
+            if(dt == 0):
+                # by definition queuing delay >= 0
+                s.add(v.qbound[t][dt])
+            elif(dt <= t):
+                s.add(
+                    Implies(v.S[t] == v.S[t-1],
+                            v.qbound[t][dt] == v.qbound[t-1][dt]))
+                s.add(
+                    Implies(v.S[t] != v.S[t-1],
+                            v.qbound[t][dt] ==
+                            (v.S[t] <= v.A[t-dt] - v.L[t-dt])))
+            else:
+                s.add(
+                    Implies(v.S[t] == v.S[t-1],
+                            v.qbound[t][dt] == v.qbound[t-1][dt]))
+                # Let solver choose non-deterministically what happens when
+                # S[t] != S[t-1] for t-dt < 0, i.e.,
+                # no constraint on qbound[t][dt>t]
+
+    # Needed only for non-deterministic choices, mostly a sanity constraint for
+    # deterministic variables.
+    for t in range(c.T):
+        for dt in range(c.T-1):
+            # If queuing delay at t is greater than dt+1 then
+            # it is also greater than dt.
+            s.add(Implies(v.qbound[t][dt+1], v.qbound[t][dt]))
+
+
 def calculate_qdel(c: ModelConfig, s: MySolver, v: Variables):
     # Figure out the time when the bytes being output at time t were
     # first input
@@ -161,13 +199,13 @@ def calculate_qdel(c: ModelConfig, s: MySolver, v: Variables):
         for dt in range(c.T):
             if dt > t:
                 s.add(Not(v.qdel[t][dt]))
-                continue
-            s.add(v.qdel[t][dt] == Or(
-                And(
-                    v.S[t] != v.S[t - 1],
-                    And(v.A[t - dt - 1] - v.L[t - dt - 1] < v.S[t],
-                        v.A[t - dt] - v.L[t - dt] >= v.S[t])),
-                And(v.S[t] == v.S[t - 1], v.qdel[t - 1][dt])))
+            else:
+                s.add(v.qdel[t][dt] == Or(
+                    And(
+                        v.S[t] != v.S[t - 1],
+                        And(v.A[t - dt - 1] - v.L[t - dt - 1] < v.S[t],
+                            v.A[t - dt] - v.L[t - dt] >= v.S[t])),
+                    And(v.S[t] == v.S[t - 1], v.qdel[t - 1][dt])))
 
         # We don't know what happened at t < 0, so we'll let the solver pick
         # non-deterministically

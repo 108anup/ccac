@@ -70,6 +70,19 @@ class Variables(pyz3_utils.Variables):
             self.qdel = [[s.Bool(f"{pre}qdel_{t},{dt}") for dt in range(T)]
                          for t in range(T)]
 
+        # qbound[t][dt] is true iff the queuing delay experienced by bytes
+        # recieved at time t is greater than or equal to dt. In other words,
+        # qbound[t][dt] is true iff S[t] <= A[t-dt] - L[t-dt]. If S[t] ==
+        # S[t-1], then no new bytes were serviced, so qbound is undefined, we
+        # copy the qbound of last serviced byte. If dt = 0 then qbound is by
+        # definition True as queing delay >= 0. Queing delay at time t can be
+        # greater than t, if S[t] < A[0] - L[0], then queueing delay is greater
+        # than t. When dt > t, we don't know when the byte was sent
+        if(c.calculate_qbound):
+            self.qbound = [[s.Bool(f"{pre}qbound_{t},{dt}")
+                            for dt in range(T)]
+                           for t in range(T)]
+
         # This is for the non-composing model where waste is allowed only when
         # A - L and S come within epsilon of each other. See in 'config' for
         # how epsilon can be configured
