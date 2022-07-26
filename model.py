@@ -223,7 +223,6 @@ def calculate_qbound(c: ModelConfig, s: MySolver, v: Variables):
                 Not(v.qbound[t+1][dt+1])))
 
 
-
 def calculate_qdel_old(c: ModelConfig, s: MySolver, v: Variables):
     # Figure out the time when the bytes being output at time t were
     # first input
@@ -284,6 +283,16 @@ def calculate_qdel(c: ModelConfig, s: MySolver, v: Variables):
     # deterministic variables.
     for t in range(c.T):
         s.add(Sum(*v.qdel[t]) <= 1)
+
+    for t1 in range(c.T-1):
+        for dt1 in range(c.T):
+            t2 = t1+1
+            # dt2 starts from dt1+1+1
+            for dt2 in range(dt1+1+1, c.T):
+                s.add(Implies(
+                    v.qdel[t1][dt1],
+                    Not(v.qdel[t2][dt2])
+                ))
 
 
 def multi_flows(c: ModelConfig, s: MySolver, v: Variables):
