@@ -202,6 +202,27 @@ def calculate_qbound(c: ModelConfig, s: MySolver, v: Variables):
             # it is also greater than dt.
             s.add(Implies(v.qbound[t][dt+1], v.qbound[t][dt]))
 
+    for t in range(c.T-1):
+        for dt in range(c.T-1):
+            # Queuing delay at time (t+1) cannot be
+            # greater than (queuing delay at time t) + 1.
+
+            # Why? -> Say queuing delay at time t1 is qd1 and at time t2>t1 is
+            # qd2, so the packet recvd at time t1 was sent at t1-qd1 and at that
+            # recvd t2 was sent at t2-qd2. Since packets are sent in FIFO order
+            # t2-qd2 >= t1-qd1. Put t2=t1+1, we get qd2 <= qd1+1, i.e., (qd at
+            # time t1+1) is less than or equal to qd1+1.
+
+            # We encode if queueing delay at time t is less than dt, then
+            # queuing delay at time t+1 is less than dt+1. i.e., qd(t+1) <=
+            # qd(t) + 1 < dt + 1. Recall qbound[t][dt] encodes qdelay at time t
+            # is greater than or equal to dt. Hence, not(qbound[t][dt]) encodes
+            # qdelay is less than dt.
+            s.add(Implies(
+                Not(v.qbound[t][dt]),
+                Not(v.qbound[t+1][dt+1])))
+
+
 
 def calculate_qdel_old(c: ModelConfig, s: MySolver, v: Variables):
     # Figure out the time when the bytes being output at time t were
