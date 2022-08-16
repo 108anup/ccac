@@ -311,7 +311,7 @@ def multi_flows(c: ModelConfig, s: MySolver, v: Variables):
             for dt in range(t):
                 # Only defined for dt<=t-1
                 s.add(Implies(
-                    v.qdel[t][dt], v.S_f[n][t] > v.A_f[n][t-dt-1]))
+                    v.qdel[t][dt], v.S_f[n][t] > v.A_f[n][t-dt-1]-v.L_f[n][t-dt-1]))
 
 
 def epsilon_alpha(c: ModelConfig, s: MySolver, v: Variables):
