@@ -15,9 +15,9 @@ class ModelConfig:
     # Link rate
     C: float
     # Packets cannot be dropped below this threshold
-    buf_min: Optional[float]
+    buf_min: Optional[Union[float, z3.ExprRef]]
     # Packets have to be dropped above this threshold
-    buf_max: Optional[float]
+    buf_max: Optional[Union[float, z3.ExprRef]]
     # Number of dupacks before sender declares loss
     dupacks: Optional[float]
     # Congestion control algorithm

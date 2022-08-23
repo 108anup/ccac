@@ -93,6 +93,16 @@ class Variables(pyz3_utils.Variables):
                 for dt in range(T)]
                 for t in range(T)])
 
+            # Used by CCA to ensure it reacts at most once per congestion event
+            self.exceed_queue_f = [[s.Bool(f"{pre}exceed_queue_{n},{t}")
+                                    for t in range(c.T)]
+                                   for n in range(c.N)]
+            self.last_decrease_f = [[s.Real(f"{pre}last_decrease_{n},{t}")
+                                     for t in range(c.T)]
+                                    for n in range(c.N)]
+            # Cegis generator var
+            self.qsize_thresh = s.Real('Gen__const_qsize_thresh')  # This is in multiples of Rm
+
         # This is for the non-composing model where waste is allowed only when
         # A - L and S come within epsilon of each other. See in 'config' for
         # how epsilon can be configured
