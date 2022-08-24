@@ -1,3 +1,4 @@
+import z3
 import numpy as np
 from typing import Any, List, Optional, Tuple, Union
 
@@ -101,11 +102,14 @@ class Variables(pyz3_utils.Variables):
                                      for t in range(c.T)]
                                     for n in range(c.N)]
             # Cegis generator var
-            self.qsize_thresh = s.Real('Gen__const_qsize_thresh')  # This is in multiples of Rm
+            # This is in multiples of Rm
+            self.qsize_thresh = s.Real('Gen__const_qsize_thresh')
+            assert isinstance(self.qsize_thresh, z3.ArithRef)
 
         if(c.mode_switch):
-            self.mode_f = np.array([[s.Bool(f"Def__mode_{n},{t}") for t in range(c.T)]
-                   for n in range(c.N)])  # definition variable
+            self.mode_f = np.array([[
+                s.Bool(f"Def__mode_{n},{t}") for t in range(c.T)]
+                for n in range(c.N)])
 
         # This is for the non-composing model where waste is allowed only when
         # A - L and S come within epsilon of each other. See in 'config' for
