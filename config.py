@@ -51,6 +51,8 @@ class ModelConfig:
     # These config variables are calculated automatically
     calculate_qdel: bool
 
+    mode_switch: bool
+
     def __init__(self,
                  N: int,
                  D: int,

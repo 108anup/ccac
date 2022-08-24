@@ -103,6 +103,10 @@ class Variables(pyz3_utils.Variables):
             # Cegis generator var
             self.qsize_thresh = s.Real('Gen__const_qsize_thresh')  # This is in multiples of Rm
 
+        if(c.mode_switch):
+            self.mode_f = np.array([[s.Bool(f"Def__mode_{n},{t}") for t in range(c.T)]
+                   for n in range(c.N)])  # definition variable
+
         # This is for the non-composing model where waste is allowed only when
         # A - L and S come within epsilon of each other. See in 'config' for
         # how epsilon can be configured
