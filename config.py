@@ -53,6 +53,8 @@ class ModelConfig:
 
     mode_switch: bool
 
+    feasible_response: bool
+
     def __init__(self,
                  N: int,
                  D: int,

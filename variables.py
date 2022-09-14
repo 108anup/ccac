@@ -52,6 +52,10 @@ class Variables(pyz3_utils.Variables):
         self.S_f = np.array([[
             s.Real(f"{pre}service_{n},{t}") for t in range(T)]
             for n in range(c.N)])
+        if(c.feasible_response):
+            assert(c.N == 1)
+            self.S_choice = np.array(
+                [s.Real(f"{pre}tot_service_choice_{t}") for t in range(T)])
         # Sum of S_f across all flows
         self.S = np.array([s.Real(f"{pre}tot_service_{t}") for t in range(T)])
         # Cumulative number of bytes lost for flow n till time t
