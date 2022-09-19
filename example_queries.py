@@ -1,10 +1,10 @@
+from pyz3_utils import MySolver, run_query
 from z3 import And, Not, Or
 
-from config import ModelConfig
-from model import make_solver
-from plot import plot_model
-from pyz3_utils import MySolver, run_query
-from utils import make_periodic
+from .config import ModelConfig
+from .model import make_solver
+from .plot import plot_model
+from .utils import make_periodic
 
 
 def bbr_low_util(timeout=10):
@@ -165,7 +165,17 @@ if __name__ == "__main__":
         exit(1)
     cmd = sys.argv[1]
     if cmd in funcs:
-        funcs[cmd]()
+        try:
+            funcs[cmd]()
+        except Exception:
+            import sys
+            import traceback
+
+            import ipdb
+            extype, value, tb = sys.exc_info()
+            traceback.print_exc()
+            ipdb.post_mortem(tb)
+
     else:
         print("Command not recognized")
         print(usage)

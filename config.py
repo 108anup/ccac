@@ -40,20 +40,20 @@ class ModelConfig:
     # Losses are by default detected using dupacks/timeouts. Oracle emulates
     # losses being detecting using ECN marks signalled to
     # the sender on each loss event.
-    loss_oracle: bool
+    loss_oracle: bool = False
     # Whether loss decisions should be deterministic or non-deterministic.
     # Non determinisim is more accurate
     # (considering discrete relaxation of continuous model).
-    deterministic_loss: bool
+    deterministic_loss: bool = False
 
-    calculate_qbound: bool
+    calculate_qbound: bool = False
 
     # These config variables are calculated automatically
-    calculate_qdel: bool
+    calculate_qdel: bool = False
 
-    mode_switch: bool
+    mode_switch: bool = False
 
-    feasible_response: bool
+    feasible_response: bool = False
 
     def __init__(self,
                  N: int,
