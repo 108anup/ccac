@@ -67,9 +67,10 @@ class Variables(pyz3_utils.Variables):
         # Cumulative number of bytes wasted by the server till time t
         self.W = np.array([s.Real(f"{pre}wasted_{t}") for t in range(T)])
         # Whether or not flow n is timing out at time t
-        self.timeout_f = np.array([[
-            s.Bool(f"{pre}timeout_{n},{t}") for t in range(T)]
-            for n in range(c.N)])
+        if(not c.loss_oracle):
+            self.timeout_f = np.array([[
+                s.Bool(f"{pre}timeout_{n},{t}") for t in range(T)]
+                for n in range(c.N)])
 
         # If qdel[t][dt] is true, it means that the bytes exiting at t were
         # input at time t - dt. If out[t] == out[t-1], then qdel[t][dt] ==
@@ -124,11 +125,12 @@ class Variables(pyz3_utils.Variables):
         # The number of dupacks that need to arrive before we declare that a
         # loss has occured by dupacks. Z3 can usually pick any amount. You can
         # also set dupacks = 3 * alpha to emulate the usual behavior
-        if c.dupacks is None:
-            self.dupacks = s.Real(f"{pre}dupacks")
-            s.add(self.dupacks >= 0)
-        else:
-            self.dupacks = c.dupacks
+        if(not c.loss_oracle):
+            if c.dupacks is None:
+                self.dupacks = s.Real(f"{pre}dupacks")
+                s.add(self.dupacks >= 0)
+            else:
+                self.dupacks = c.dupacks
 
         # The MSS. Since C=1 (arbitrary units), C / alpha sets the link rate in
         # MSS/timestep. Typically we allow Z3 to pick any value it wants to
