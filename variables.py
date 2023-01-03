@@ -108,12 +108,12 @@ class Variables(pyz3_utils.Variables):
                                     for n in range(c.N)]
             # Cegis generator var
             # This is in multiples of Rm
-            self.qsize_thresh = s.Real('Gen__const_qsize_thresh')
+            self.qsize_thresh = s.Real(f"{pre}Gen__const_qsize_thresh")
             assert isinstance(self.qsize_thresh, z3.ArithRef)
 
         if(c.mode_switch):
             self.mode_f = np.array([[
-                s.Bool(f"Def__mode_{n},{t}") for t in range(c.T)]
+                s.Bool(f"{pre}Def__mode_{n},{t}") for t in range(c.T)]
                 for n in range(c.N)])
 
         # This is for the non-composing model where waste is allowed only when
@@ -142,6 +142,24 @@ class Variables(pyz3_utils.Variables):
             self.alpha = c.alpha
 
         self.C0 = s.Real(f"{pre}initial_tokens")
+
+        if(c.beliefs):
+            self.max_c = np.array([[
+                s.Real(f"{pre}max_c_{n},{t}")
+                for t in range(T)]
+                for n in range(c.N)])
+            self.min_c = np.array([[
+                s.Real(f"{pre}min_c_{n},{t}")
+                for t in range(T)]
+                for n in range(c.N)])
+            self.max_buffer = np.array([[
+                s.Real(f"{pre}max_buffer_{n},{t}")
+                for t in range(T)]
+                for n in range(c.N)])
+            self.min_buffer = np.array([[
+                s.Real(f"{pre}min_buffer_{n},{t}")
+                for t in range(T)]
+                for n in range(c.N)])
 
 
 class VariableNames:

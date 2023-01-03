@@ -55,6 +55,8 @@ class ModelConfig:
 
     feasible_response: bool = False
 
+    beliefs: bool = False
+
     def __init__(self,
                  N: int,
                  D: int,
