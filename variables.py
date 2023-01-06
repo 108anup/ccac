@@ -152,14 +152,6 @@ class Variables(pyz3_utils.Variables):
                 s.Real(f"{pre}min_c_{n},{t}")
                 for t in range(T)]
                 for n in range(c.N)])
-            self.max_buffer = np.array([[
-                s.Real(f"{pre}max_buffer_{n},{t}")
-                for t in range(T)]
-                for n in range(c.N)])
-            self.min_buffer = np.array([[
-                s.Real(f"{pre}min_buffer_{n},{t}")
-                for t in range(T)]
-                for n in range(c.N)])
             self.max_qdel = np.array([[
                 s.Real(f"{pre}max_qdel_{n},{t}")
                 for t in range(T)]
@@ -168,7 +160,15 @@ class Variables(pyz3_utils.Variables):
                 s.Real(f"{pre}min_qdel_{n},{t}")
                 for t in range(T)]
                 for n in range(c.N)])
-
+            if(c.buf_min is not None):
+                self.max_buffer = np.array([[
+                    s.Real(f"{pre}max_buffer_{n},{t}")
+                    for t in range(T)]
+                    for n in range(c.N)])
+                self.min_buffer = np.array([[
+                    s.Real(f"{pre}min_buffer_{n},{t}")
+                    for t in range(T)]
+                    for n in range(c.N)])
 
 
 class VariableNames:
