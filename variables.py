@@ -160,7 +160,7 @@ class Variables(pyz3_utils.Variables):
                 s.Real(f"{pre}min_qdel_{n},{t}")
                 for t in range(T)]
                 for n in range(c.N)])
-            if(c.buf_max is not None):
+            if(c.buf_min is not None):
                 self.max_buffer = np.array([[
                     s.Real(f"{pre}max_buffer_{n},{t}")
                     for t in range(T)]
