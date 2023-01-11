@@ -338,8 +338,14 @@ def cwnd_rate_arrival(c: ModelConfig, s: MySolver, v: Variables):
                 A_w = If(A_w >= v.A_f[n][t - 1], A_w, v.A_f[n][t - 1])
                 # Arrival due to rate
                 A_r = v.A_f[n][t - 1] + v.r_f[n][t]
-                # Net arrival
-                s.add(v.A_f[n][t] == If(A_w >= A_r, A_r, A_w))
+                if(not c.app_limited):
+                    # Net arrival
+                    s.add(v.A_f[n][t] == If(A_w >= A_r, A_r, A_w))
+                else:
+                    A_net = If(A_w >= A_r, A_r, A_w)
+                    # Arrival due to app_limits
+                    A_a = v.app_limits[n][t]
+                    s.add(v.A_f[n][t] == If(A_a >= A_net, A_net, A_a))
             else:
                 # NOTE: This is different in this new version. Here anything
                 # can happen. No restrictions

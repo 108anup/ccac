@@ -170,6 +170,12 @@ class Variables(pyz3_utils.Variables):
                     for t in range(T)]
                     for n in range(c.N)])
 
+        if(c.app_limited):
+            self.app_limits = np.array([[
+                s.Real(f"{pre}app_limits_{n},{t}")
+                for t in range(c.T)]
+                for n in range(c.N)])
+
 
 class VariableNames:
     ''' Class with the same structure as Variables, but with just the names '''

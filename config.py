@@ -57,6 +57,8 @@ class ModelConfig:
 
     beliefs: bool = False
 
+    app_limited: bool = False
+
     def __init__(self,
                  N: int,
                  D: int,
