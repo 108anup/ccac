@@ -56,6 +56,7 @@ class ModelConfig:
     feasible_response: bool = False
 
     beliefs: bool = False
+    fix_stale_beliefs: bool = False
 
     app_limited: bool = False
 
