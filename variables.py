@@ -169,6 +169,10 @@ class Variables(pyz3_utils.Variables):
                     s.Real(f"{pre}min_buffer_{n},{t}")
                     for t in range(T)]
                     for n in range(c.N)])
+            self.start_state_f = np.array([
+                s.Int(f"{pre}belief_state_state_{n}") for n in range(c.N)])
+            for n in range(c.N):
+                s.add(z3.And(self.start_state_f[n] >= 0, self.start_state_f[n] < c.T-1))
 
         if(c.app_limited):
             self.app_limits = np.array([[
