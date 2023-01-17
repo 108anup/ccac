@@ -56,6 +56,7 @@ class ModelConfig:
     feasible_response: bool = False
 
     beliefs: bool = False
+    beliefs_use_buffer: bool = False
     fix_stale__max_c: bool = False
     fix_stale__min_c: bool = False
 
