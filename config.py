@@ -64,6 +64,8 @@ class ModelConfig:
     maxc_minc_change_mult: float = 1
 
     app_limited: bool = False
+    app_rate: Optional[float] = None
+    app_burst_factor: Optional[float] = None
 
     def __init__(self,
                  N: int,
