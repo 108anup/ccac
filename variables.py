@@ -179,6 +179,7 @@ class Variables(pyz3_utils.Variables):
                 s.Real(f"{pre}app_limits_{n},{t}")
                 for t in range(c.T)]
                 for n in range(c.N)])
+            self.app_rate = z3.Real(f"{pre}app_rate")
 
 
 class VariableNames:
