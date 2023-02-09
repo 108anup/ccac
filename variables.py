@@ -160,6 +160,7 @@ class Variables(pyz3_utils.Variables):
                 s.Real(f"{pre}min_qdel_{n},{t}")
                 for t in range(T)]
                 for n in range(c.N)])
+
             if(c.buf_min is not None and c.beliefs_use_buffer):
                 self.max_buffer = np.array([[
                     s.Real(f"{pre}max_buffer_{n},{t}")
@@ -174,12 +175,24 @@ class Variables(pyz3_utils.Variables):
             for n in range(c.N):
                 s.add(z3.And(self.start_state_f[n] >= 0, self.start_state_f[n] < c.T-1))
 
-        if(c.app_limited):
+        if (c.app_limited):
             self.app_limits = np.array([[
                 s.Real(f"{pre}app_limits_{n},{t}")
                 for t in range(c.T)]
                 for n in range(c.N)])
-            self.app_rate = z3.Real(f"{pre}app_rate")
+
+            if(c.app_fixed_avg_rate):
+                self.app_rate = z3.Real(f"{pre}app_rate")
+
+                if (c.beliefs):
+                    self.max_app_rate = np.array([[
+                        s.Real(f"{pre}max_app_rate_{n},{t}")
+                        for t in range(T)]
+                        for n in range(c.N)])
+                    self.min_app_rate = np.array([[
+                        s.Real(f"{pre}min_app_rate_{n},{t}")
+                        for t in range(T)]
+                        for n in range(c.N)])
 
 
 class VariableNames:
