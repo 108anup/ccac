@@ -68,6 +68,8 @@ class ModelConfig:
     app_rate: Optional[float] = None
     app_burst_factor: float = 1
 
+    send_min_alpha: bool = False
+
     def __init__(self,
                  N: int,
                  D: int,
