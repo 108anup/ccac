@@ -162,14 +162,15 @@ class Variables(pyz3_utils.Variables):
                 for n in range(c.N)])
 
             if(c.buf_min is not None and c.beliefs_use_buffer):
-                self.max_buffer = np.array([[
-                    s.Real(f"{pre}max_buffer_{n},{t}")
-                    for t in range(T)]
-                    for n in range(c.N)])
                 self.min_buffer = np.array([[
                     s.Real(f"{pre}min_buffer_{n},{t}")
                     for t in range(T)]
                     for n in range(c.N)])
+                if(c.beliefs_use_max_buffer):
+                    self.max_buffer = np.array([[
+                        s.Real(f"{pre}max_buffer_{n},{t}")
+                        for t in range(T)]
+                        for n in range(c.N)])
             self.start_state_f = np.array([
                 s.Int(f"{pre}belief_state_state_{n}") for n in range(c.N)])
             for n in range(c.N):

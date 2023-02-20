@@ -58,6 +58,7 @@ class ModelConfig:
 
     beliefs: bool = False
     beliefs_use_buffer: bool = False
+    beliefs_use_max_buffer: bool = False
     fix_stale__max_c: bool = False
     fix_stale__min_c: bool = False
     min_maxc_minc_gap_mult: float = 1
