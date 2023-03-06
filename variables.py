@@ -160,6 +160,10 @@ class Variables(pyz3_utils.Variables):
                 s.Real(f"{pre}min_qdel_{n},{t}")
                 for t in range(T)]
                 for n in range(c.N)])
+            self.min_c_lambda = np.array([[
+                s.Real(f"{pre}min_c_lambda_{n},{t}")
+                for t in range(T)]
+                for n in range(c.N)])
 
             if(c.buf_min is not None and c.beliefs_use_buffer):
                 self.min_buffer = np.array([[
