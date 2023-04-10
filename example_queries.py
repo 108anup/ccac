@@ -1,5 +1,5 @@
 from pyz3_utils import MySolver, run_query
-from z3 import And, Not, Or
+from z3 import And, Not, Or, If
 
 from .config import ModelConfig
 from .model import make_solver
@@ -7,7 +7,7 @@ from .plot import plot_model
 from .utils import make_periodic
 
 
-def bbr_low_util(timeout=10):
+def bbr_low_util(tsteps=10, timeout=10):
     '''Finds an example trace where BBR has < 10% utilization. It can be made
     arbitrarily small, since BBR can get arbitrarily small throughput in our
     model.
@@ -18,6 +18,7 @@ def bbr_low_util(timeout=10):
 
     '''
     c = ModelConfig.default()
+    c.T = tsteps
     c.compose = True
     c.cca = "bbr"
     # Simplification isn't necessary, but makes the output a bit easier to
@@ -149,8 +150,57 @@ def aimd_premature_loss(timeout=60):
         plot_model(qres.model, c, qres.v)
 
 
+def rocc_high_util(tsteps=10, timeout=10):
+    c = ModelConfig.default()
+    c.compose = True
+    c.C = 100
+    c.cca = "paced"
+    c.simplify = False
+    c.calculate_qdel = False
+    c.unsat_core = True
+    c.T = tsteps
+    s, v = make_solver(c)
+    # Consider the no loss case for simplicity
+    s.add(v.L[0] == v.L[-1])
+    s.add(v.Ld_f[0][0] == v.L[0])
+    first = 4
+
+    # CCA:
+    assert first >= c.R
+    for t in range(first, c.T):
+        next = (v.S_f[0][t-c.R] - v.S_f[0][t-first]) + c.C/100
+        s.add(v.c_f[0][t] == If(next > c.C/100, next, c.C/100))
+
+    # High util or cwnd increases
+    desired = Or(
+        v.S[c.T-1] - v.S[first] >= 0.1 * c.C * (c.T-1-first+1-c.D),
+        v.c_f[0][-1] > v.c_f[0][first])
+    s.add(Not(desired))
+    # make_periodic(c, s, v, c.R + c.D)
+
+    print(s.to_smt2(), file = open("/tmp/ccac.smt2", "w"))
+    s.check()
+    # print(s.statistics())
+    qres = run_query(c, s, v, timeout)
+    print(qres.satisfiable)
+    if str(qres.satisfiable) == "sat":
+        plot_model(qres.model, c, qres.v)
+
+
+
 if __name__ == "__main__":
+
+    import time
+    for tsteps in range(10, 21, 1):
+    # for tsteps in range(10, 11, 1):
+        print(f"tsteps = {tsteps}")
+        start = time.time()
+        rocc_high_util(tsteps, 3600)
+        end = time.time()
+        print(f"Time taken: {end - start}")
+
     import sys
+    sys.exit(0)
 
     funcs = {
         "aimd_premature_loss": aimd_premature_loss,

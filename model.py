@@ -394,6 +394,7 @@ def make_solver(c: ModelConfig,
                 v: Optional[Variables] = None) -> Tuple[MySolver, Variables]:
     if s is None:
         s = MySolver()
+        s.warn_undeclared = False
     if v is None:
         v = Variables(c, s)
 
